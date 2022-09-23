@@ -78,7 +78,7 @@ while video_capture.isOpened():
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
      
     # See if we detect any face
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=4, minSize=(80,80))
 
     if len(faces) == 0:
         state_machine.process(opencv_state_machine.FaceStateMachine.STATE_NO_FACE)
@@ -93,7 +93,7 @@ while video_capture.isOpened():
     face = faces[0]
     (x,y,w,h) = face
     face_rect = gray[y:y+h, x:x+w]
-    smiles = smile_cascade.detectMultiScale(face_rect, 1.8, 20)
+    smiles = smile_cascade.detectMultiScale(face_rect, scaleFactor=1.2, minNeighbors=9)
 
     if len(smiles) > 0:
         print("Smile detected")
