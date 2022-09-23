@@ -8,25 +8,64 @@ class FaceStateMachine:
     STATE_MANY_FACES = 3
     STATE_NUM_STATES = 4
 
-    QUEUE_SIZE = 20
+    NONE_STRIKE_THRESHOLD = 4
+    FACE_STRIKE_THRESHOLD = 2
+    SMILE_STRIKE_THRESHOLD = 4
+    NOSMILE_STRIKE_THRESHOLD = 2
+
+    QUEUE_SIZE = 10
 
     def __init__(self, state_function):
         self.current_state = self.STATE_NO_FACE
-        self.state_queue = [self.STATE_NO_FACE] * self.QUEUE_SIZE
         self.last_state_change = time.time()
         self.state_function = state_function
+        self.face_strike = 0
+        self.none_strike = 0
+        self.face_detected = False
+        self.smile_strike = 0
+        self.nosmile_strike = 0
+        self.smile_detected = False
 
     def process(self, input):
         assert(input >= 0 and input < self.STATE_NUM_STATES)
-        cnts = [0] * self.STATE_NUM_STATES
-        self.state_queue = self.state_queue[1:] + [input]
-        for i in range(self.QUEUE_SIZE):
-            cnts[self.state_queue[i]] += 1
 
         new_state = self.current_state
-        for i in range(self.STATE_NUM_STATES):
-            if cnts[i] >= self.QUEUE_SIZE//2:
-                new_state = i
+
+        if input == self.STATE_NO_FACE:
+            self.none_strike += 1
+            self.face_strike = 0
+            if self.none_strike == self.NONE_STRIKE_THRESHOLD:
+                self.none_strike = 0
+                self.smile_strike = 0
+                self.nosmile_strike = 0
+                self.face_detected = False
+                self.smile_detected = False
+                new_state = self.STATE_NO_FACE
+
+        if input == self.STATE_FACE_NO_SMILE or input == self.STATE_SMILE:
+            self.none_strike = 0
+            self.face_strike += 1
+            if self.face_strike == self.FACE_STRIKE_THRESHOLD:
+                self.face_strike = 0
+                if self.face_detected == False:
+                    new_state = self.STATE_FACE_NO_SMILE
+                self.face_detected = True
+
+        if self.face_detected and input == self.STATE_FACE_NO_SMILE:
+            self.smile_strike = 0
+            self.nosmile_strike += 1
+            if self.nosmile_strike == self.NOSMILE_STRIKE_THRESHOLD:
+                self.nosmile_strike = 0
+                self.smile_detected = False
+                new_state = self.STATE_FACE_NO_SMILE
+
+        if self.face_detected and input == self.STATE_SMILE:
+            self.nosmile_strike = 0
+            self.smile_strike += 1
+            if self.smile_strike == self.SMILE_STRIKE_THRESHOLD:
+                self.smile_strike = 0
+                self.smile_detected = True
+                new_state = self.STATE_SMILE
 
         if new_state != self.current_state:
             self.last_state_change = time.time()
