@@ -7,7 +7,7 @@ import os
 import time
 import opencv_state_machine
 
-STATE_TIME_THRESHOLD = 4
+STATE_TIME_THRESHOLD = 7
 
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades +'haarcascade_frontalface_default.xml')
 smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades +'haarcascade_smile.xml')
@@ -67,11 +67,11 @@ def handle_state(state, last_state_time):
 state_machine = opencv_state_machine.FaceStateMachine(handle_state)
 
 video_capture = cv2.VideoCapture(0)
-print(video_capture.get(cv2.CAP_PROP_FPS))
 video_capture.set(cv2.CAP_PROP_FPS, 5.0)
-print(video_capture.get(cv2.CAP_PROP_FPS))
 while video_capture.isOpened():
-    # Captures video_capture frame by frame
+    # Captures video_capture frame by frame. Capture some frames to clear the buffer first
+    _, frame = video_capture.read()
+    _, frame = video_capture.read()
     _, frame = video_capture.read()
  
     # Capture image in monochrome
@@ -85,21 +85,17 @@ while video_capture.isOpened():
         continue
 
     if len(faces) > 1:
-        print("Faces detected")
         state_machine.process(opencv_state_machine.FaceStateMachine.STATE_MANY_FACES)
         continue
 
-    print("Face detected")
     face = faces[0]
     (x,y,w,h) = face
     face_rect = gray[y:y+h, x:x+w]
     smiles = smile_cascade.detectMultiScale(face_rect, scaleFactor=1.2, minNeighbors=9)
 
     if len(smiles) > 0:
-        print("Smile detected")
         state_machine.process(opencv_state_machine.FaceStateMachine.STATE_SMILE)
     else:
-        print("No smile detected")
         state_machine.process(opencv_state_machine.FaceStateMachine.STATE_FACE_NO_SMILE)
  
 # Release the capture once all the processing is done.
