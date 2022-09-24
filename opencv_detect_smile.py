@@ -2,7 +2,6 @@
 
 import cv2
 import random
-#import pygame
 import os
 import time
 import opencv_state_machine
@@ -24,14 +23,9 @@ no_smile_file3 = "recordings/ugly.wav"
 
 def handle_smile():
     if random.randrange(2) == 1:
-      #pygame.mixer.music.load(smile_file1)
       os.system("aplay " + smile_file1)
     else:
-      #pygame.mixer.music.load(smile_file2)
       os.system("aplay " + smile_file2)
-    #pygame.mixer.music.play()
-    #while pygame.mixer.get_busy():
-    #    continue
 
 def handle_no_face():
     if random.randrange(2) == 1:
