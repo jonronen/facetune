@@ -20,6 +20,14 @@ no_face_file2 = "recordings/look_here.wav"
 no_smile_file1 = "recordings/smile_already.wav"
 no_smile_file2 = "recordings/smile_please.wav"
 no_smile_file3 = "recordings/ugly.wav"
+scatter_file1 = "recordings/go_away.wav"
+scatter_file2 = "recordings/scatter.wav"
+
+def handle_scatter():
+    if random.randrange(2) == 1:
+      os.system("aplay " + scatter_file1)
+    else:
+      os.system("aplay " + scatter_file2)
 
 def handle_smile():
     if random.randrange(2) == 1:
@@ -57,6 +65,8 @@ def handle_state(state, last_state_time):
             handle_no_smile()
         elif state == opencv_state_machine.FaceStateMachine.STATE_SMILE:
             handle_smile()
+        elif state == opencv_state_machine.FaceStateMachine.STATE_SCATTER:
+            handle_scatter()
 
 state_machine = opencv_state_machine.FaceStateMachine(handle_state)
 

@@ -6,18 +6,20 @@ class FaceStateMachine:
     STATE_FACE_NO_SMILE = 1
     STATE_SMILE = 2
     STATE_MANY_FACES = 3
-    STATE_NUM_STATES = 4
+    STATE_SCATTER = 4
+    STATE_NUM_STATES = 5
 
     NONE_STRIKE_THRESHOLD = 4
     FACE_STRIKE_THRESHOLD = 2
     SMILE_STRIKE_THRESHOLD = 4
     NOSMILE_STRIKE_THRESHOLD = 2
 
-    QUEUE_SIZE = 10
+    SCATTER_THRESHOLD = 15
 
     def __init__(self, state_function):
         self.current_state = self.STATE_NO_FACE
         self.last_state_change = time.time()
+        self.last_face_detection = 0
         self.state_function = state_function
         self.face_strike = 0
         self.none_strike = 0
@@ -39,6 +41,7 @@ class FaceStateMachine:
                 self.smile_strike = 0
                 self.nosmile_strike = 0
                 self.face_detected = False
+                self.last_face_detection = 0
                 self.smile_detected = False
                 new_state = self.STATE_NO_FACE
 
@@ -49,6 +52,7 @@ class FaceStateMachine:
                 self.face_strike = 0
                 if self.face_detected == False:
                     new_state = self.STATE_FACE_NO_SMILE
+                    self.last_face_detection = time.time()
                 self.face_detected = True
 
         if self.face_detected and input == self.STATE_FACE_NO_SMILE:
@@ -66,6 +70,14 @@ class FaceStateMachine:
                 self.smile_strike = 0
                 self.smile_detected = True
                 new_state = self.STATE_SMILE
+
+        # check if someone got stuck in front of the camera
+        if self.face_detected and \
+                self.last_face_detection != 0 and \
+                time.time() - self.last_face_detection > self.SCATTER_THRESHOLD:
+            new_state = self.STATE_SCATTER
+            self.face_detected = False
+            self.last_face_detection = 0
 
         if new_state != self.current_state:
             self.last_state_change = time.time()
