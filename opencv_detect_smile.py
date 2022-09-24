@@ -77,6 +77,7 @@ while video_capture.isOpened():
     _, frame = video_capture.read()
     _, frame = video_capture.read()
     _, frame = video_capture.read()
+    frame = cv2.rotate(frame, cv2.ROTATE_180)
  
     # Capture image in monochrome
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
